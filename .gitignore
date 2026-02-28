@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.env
+
+# C++ / CUDA / C
+*.o
+*.obj
+*.out
+*.exe
+*.dll
+*.lib
+*.a
+*.ptx
+*.cubin
+# Ignore build directories
+build/
+bin/
+
+# Jupyter Notebook / Google Colab
+.ipynb_checkpoints
+
+# Datasets (Crucial: never push big Kaggle datasets to GitHub!)
+data/
+*.csv
+*.dat
+*.json
+*.txt
+*.h5
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
