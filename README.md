@@ -17,8 +17,7 @@ This repository provides a comprehensive performance analysis of the K-Means clu
 * *Note: The project is fully compatible with Google Colab for cloud-based execution if a local NVIDIA GPU is unavailable.*
 
 ## 📁 Project Structure
-
-\`\`\`text
+```text
 cuda-kmeans-benchmark/
 ├── data/               # Local directory for Kaggle datasets (ignored by git)
 ├── notebooks/          # Google Colab / Jupyter Notebooks for testing
@@ -28,7 +27,7 @@ cuda-kmeans-benchmark/
 │   └── cuda/           # C++ and .cu source files for custom kernels
 ├── requirements.txt    # Python dependencies
 └── README.md
-\`\`\`
+```
 
 ## 📊 Benchmark Results
 
