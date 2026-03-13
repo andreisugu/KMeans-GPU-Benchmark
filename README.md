@@ -85,10 +85,10 @@ KMeans-GPU-Benchmark/
 
 | Scenario | C++ Seq. | sklearn | cuML (T4) | Taichi 780M | CUDA kernel (T4) |
 |---|---|---|---|---|---|
-| Small    | TBD | 0.028s | TBD | 0.012s | TBD |
-| Medium   | TBD | 0.060s | TBD | 0.010s | TBD |
-| Large    | TBD | 2.256s | TBD | 28.50s ⚠️ | TBD |
-| High-Dim | TBD | 0.857s | TBD | 58.86s ⚠️ | TBD |
+| Small    | 0.0013s | 0.028s | TBD | 0.012s | TBD |
+| Medium   | 1.020s | 0.060s | TBD | 0.010s | TBD |
+| Large    | 1.393s | 2.256s | TBD | 28.50s ⚠️ | TBD |
+| High-Dim | 19.63s | 0.857s | TBD | 58.86s ⚠️ | TBD |
 
 > ⚠️ **iGPU finding:** Radeon 780M loses to CPU on Large/High-Dim due to register pressure (D=64/512 per thread) and shared DDR5 bandwidth contention. Wins clearly on Small/Medium (~2–6× speedup). See [Hardware Notes](#hardware).
 
