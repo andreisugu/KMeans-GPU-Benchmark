@@ -199,8 +199,12 @@ float32_t KMeans::update_step(const Dataset& ds,
             for (int d = 0; d < D; ++d) {
                 new_centers[ki * D + d] *= inv;
             }
+        } else {
+            // Cluster gol: copiem centroidul vechi (new_centers e init cu 0 — fara copiere ar sari la origine)
+            for (int d = 0; d < D; ++d) {
+                new_centers[ki * D + d] = centers[ki * D + d];
+            }
         }
-        // Daca un cluster e gol, pastram centroidul vechi (comportament standard)
     }
 
     // Calculam deplasarea maxima
