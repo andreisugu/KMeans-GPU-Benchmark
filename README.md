@@ -5,7 +5,7 @@ Performance analysis of the K-Means clustering algorithm across different hardwa
 ## 🛠️ Tech Stack
 
 | Layer | Technology |
-|---|---|
+| --- | --- |
 | Languages | Python 3.x, C++17, CUDA C++ |
 | CPU | scikit-learn, NumPy, pandas, matplotlib |
 | NVIDIA GPU | RAPIDS cuML, CUDA Toolkit 11.x |
@@ -60,7 +60,7 @@ KMeans-GPU-Benchmark/
 ## ⚙️ HPC Design Decisions
 
 | Decision | Rationale |
-|---|---|
+| --- | --- |
 | `float32` everywhere | GPUs are optimized for FP32; `double` would skew bandwidth comparisons |
 | Flat 1D row-major array in C++ | No heap fragmentation — identical memory layout to GPU VRAM |
 | Squared Euclidean distance (no `sqrt`) | Monotonic — doesn't change nearest-centroid result, saves cycles |
@@ -73,29 +73,29 @@ KMeans-GPU-Benchmark/
 ## 📊 Benchmark Scenarios
 
 | Scenario | N | D | K | Purpose |
-|---|---|---|---|---|
-| Small    | 10,000    | 2   | 5  | Correctness validation |
-| Medium   | 100,000   | 16  | 10 | Standard workload |
-| Large    | 1,000,000 | 64  | 20 | Stress test — large N |
-| High-Dim | 100,000   | 512 | 10 | Memory bandwidth test |
+| --- | --- | --- | --- | --- |
+| Small | 10,000 | 2 | 5 | Correctness validation |
+| Medium | 100,000 | 16 | 10 | Standard workload |
+| Large | 1,000,000 | 64 | 20 | Stress test — large N |
+| High-Dim | 100,000 | 512 | 10 | Memory bandwidth test |
 
 ## 📊 Benchmark Results
 
 > Run `python results/plot_results.py` after completing benchmarks to generate charts.
 
 | Scenario | C++ Seq. | sklearn | cuML (T4) | Taichi 780M | CUDA kernel (T4) |
-|---|---|---|---|---|---|
-| Small    | 0.0013s | 0.028s | TBD | 0.012s | TBD |
-| Medium   | 1.020s | 0.060s | TBD | 0.010s | TBD |
-| Large    | 1.393s | 2.256s | TBD | 28.50s ⚠️ | TBD |
+| --- | --- | --- | --- | --- | --- |
+| Small | 0.0013s | 0.028s | TBD | 0.012s | TBD |
+| Medium | 1.020s | 0.060s | TBD | 0.010s | TBD |
+| Large | 1.393s | 2.256s | TBD | 28.50s ⚠️ | TBD |
 | High-Dim | 19.63s | 0.857s | TBD | 58.86s ⚠️ | TBD |
 
-> ⚠️ **iGPU finding:** Radeon 780M loses to CPU on Large/High-Dim due to register pressure (D=64/512 per thread) and shared DDR5 bandwidth contention. Wins clearly on Small/Medium (~2–6× speedup). See [Hardware Notes](#hardware).
+> ⚠️ **iGPU finding:** Radeon 780M loses to CPU on Large/High-Dim due to register pressure (D=64/512 per thread) and shared DDR5 bandwidth contention. Wins clearly on Small/Medium (~2–6× speedup). See [Hardware](#️-hardware).
 
 ## 🖥️ Hardware
 
 | Role | Specs |
-|---|---|
+| --- | --- |
 | CPU | AMD Ryzen 7 7840HS — Zen 4, 8c/16t, 5.1 GHz, 16 GB DDR5, Linux |
 | AMD iGPU | Radeon 780M — RDNA 3, 12 CUs, gfx1103, shared DDR5 |
 | NVIDIA GPU | Tesla T4 — 16 GB GDDR6, Compute Capability 7.5 (Google Colab) |
@@ -103,6 +103,7 @@ KMeans-GPU-Benchmark/
 ## ▶️ Quick Start
 
 ### Sequential — local
+
 ```bash
 git clone https://github.com/andreisugu/KMeans-GPU-Benchmark.git
 cd KMeans-GPU-Benchmark
@@ -116,11 +117,13 @@ make && ./kmeans_seq --all
 ```
 
 ### Parallel #1a — RAPIDS cuML (Google Colab)
+
 1. Open `notebooks/KMeans_Benchmark.ipynb`
 2. `Runtime > Change runtime type > T4 GPU`
 3. Run all cells
 
 ### Parallel #1b — Taichi iGPU (local, Radeon 780M)
+
 ```bash
 pip install taichi
 python -c "import taichi as ti; ti.init(arch=ti.vulkan); print('OK')"
@@ -128,6 +131,7 @@ cd src/taichi && python benchmark_taichi.py
 ```
 
 ### Visualize
+
 ```bash
 cd results && python plot_results.py
 ```
@@ -135,7 +139,7 @@ cd results && python plot_results.py
 ## 🗺️ Roadmap
 
 | Deadline | Deliverable | Status |
-|---|---|---|
+| --- | --- | --- |
 | S2–S3 | Topic selection | ✅ |
 | S5 | Sequential: sklearn (Python) + C++17 | ✅ |
 | S8 | Parallel #1: cuML (NVIDIA T4) + Taichi (AMD 780M) | 🔄 Taichi ✅, cuML pending Colab run |
@@ -145,3 +149,27 @@ cd results && python plot_results.py
 ## 📜 License
 
 MIT License. See `LICENSE` for details.
+
+## 🚀 Installation & Setup
+
+To install all dependencies (Python, Taichi, C++ tools, etc.) and prepare your environment, run:
+
+```bash
+# (Optional) Create and activate a Python virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Install all dependencies (Python, Taichi, C++ build tools reminder)
+bash install_all_dependencies.sh
+```
+
+To run all benchmarks and generate plots in one step:
+
+```bash
+bash run_all_benchmarks.sh
+```
+
+- This will run the Python CPU, C++ sequential, and Taichi benchmarks, and generate plots.
+- For RAPIDS cuML (NVIDIA GPU), see the script or README section for Colab/manual instructions.
+
+If you want to run each benchmark individually, see the sections below for details.
