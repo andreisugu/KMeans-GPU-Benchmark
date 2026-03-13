@@ -1,9 +1,9 @@
 /**
  * kmeans.cpp
  * ----------
- * Implementare manuala K-Means secvential in C++ pur.
- * Algoritmul Lloyd — fara dependinte externe, fara SIMD, fara threading.
- * Acesta este baseline-ul "cel mai lent" — va fi comparat cu CUDA.
+ * Manual K-Means implementation in pure C++.
+ * Lloyd's algorithm — no external dependencies, no SIMD, no threading.
+ * This is the "slowest" baseline — will be compared against CUDA.
  */
 
 #include "kmeans.h"
@@ -68,7 +68,7 @@ void KMeans::init_random(const Dataset& ds, std::mt19937& rng)
 
     result_.centers.resize(k_ * D);
 
-    // Alegem k indici unici din [0, N)
+    // Choose k unique indices from [0, N)
     std::vector<int> indices(N);
     std::iota(indices.begin(), indices.end(), 0);
     std::shuffle(indices.begin(), indices.end(), rng);
@@ -83,12 +83,12 @@ void KMeans::init_random(const Dataset& ds, std::mt19937& rng)
 
 
 // ══════════════════════════════════════════════════════════════════════════════
-//  Initializare — K-Means++
-//  Algoritm:
-//    1. Alege primul centroid uniform la intamplare
-//    2. Calculeaza distanta D(x)^2 de la fiecare punct la cel mai apropiat centroid
-//    3. Alege urmatorul centroid cu probabilitate proportionala cu D(x)^2
-//    4. Repeta pana la k centroizi
+//  Initialization — K-Means++
+//  Algorithm:
+//    1. Choose first centroid uniformly at random
+//    2. Calculate D(x)^2 from each point to nearest centroid
+//    3. Choose next centroid with probability proportional to D(x)^2
+//    4. Repeat until k centroids
 // ══════════════════════════════════════════════════════════════════════════════
 void KMeans::init_kmeans_plus_plus(const Dataset& ds, std::mt19937& rng)
 {
@@ -138,7 +138,7 @@ void KMeans::init_kmeans_plus_plus(const Dataset& ds, std::mt19937& rng)
 
 // ══════════════════════════════════════════════════════════════════════════════
 //  Assignment step
-//  Pentru fiecare punct: cauta centroidul cel mai apropiat (distanta^2 minima)
+//  For each point: find nearest centroid (min squared distance)
 // ══════════════════════════════════════════════════════════════════════════════
 bool KMeans::assignment_step(const Dataset& ds,
                               const std::vector<float32_t>& centers,
@@ -170,8 +170,8 @@ bool KMeans::assignment_step(const Dataset& ds,
 
 // ══════════════════════════════════════════════════════════════════════════════
 //  Update step
-//  Recalculeaza fiecare centroid ca medie aritmetica a punctelor din cluster.
-//  Returneaza deplasarea maxima (pentru convergenta).
+//  Recalculates each centroid as arithmetic mean of points in cluster.
+//  Returns max shift (for convergence).
 // ══════════════════════════════════════════════════════════════════════════════
 float32_t KMeans::update_step(const Dataset& ds,
                                const std::vector<int>& labels,

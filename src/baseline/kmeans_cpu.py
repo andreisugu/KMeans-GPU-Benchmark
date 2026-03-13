@@ -1,8 +1,8 @@
 """
 kmeans_cpu.py
 -------------
-Wrapper peste sklearn.cluster.KMeans.
-Ruleaza algoritmul si returneaza metrici de performanta si corectitudine.
+Wrapper over sklearn.cluster.KMeans.
+Runs the algorithm and returns performance and correctness metrics.
 """
 
 import time
@@ -13,7 +13,7 @@ from sklearn.cluster import KMeans
 
 @dataclass
 class KMeansResult:
-    """Rezultatul unei rulari K-Means."""
+    """Result of a K-Means run."""
     platform:    str
     n_samples:   int
     n_features:  int
@@ -27,7 +27,7 @@ class KMeansResult:
     def summary(self) -> str:
         return (
             f"[{self.platform}] N={self.n_samples:,} D={self.n_features} K={self.k} | "
-            f"Timp={self.time_seconds:.4f}s | "
+            f"Time={self.time_seconds:.4f}s | "
             f"Iter={self.iterations} | "
             f"Inertia={self.inertia:.2f}"
         )
@@ -41,21 +41,21 @@ def run_kmeans_cpu(X: np.ndarray,
                    n_init: int = 1,
                    random_state: int = 42) -> KMeansResult:
     """
-    Ruleaza K-Means pe CPU folosind scikit-learn.
+    Runs K-Means on CPU using scikit-learn.
 
-    Parametri
-    ---------
-    X            : date de intrare (n_samples, n_features)
-    k            : numarul de clustere
-    init         : metoda de initializare ('k-means++' sau 'random')
-    max_iter     : iteratii maxime
-    tol          : pragul de convergenta
-    n_init       : rulari cu initializari diferite (1 = consistent cu CUDA)
-    random_state : seed reproductibil
-
-    Returneaza
+    Parameters
     ----------
-    KMeansResult cu toate metricile
+    X            : input data (n_samples, n_features)
+    k            : number of clusters
+    init         : initialization method ('k-means++' or 'random')
+    max_iter     : maximum iterations
+    tol          : convergence threshold
+    n_init       : runs with different initializations (1 = consistent with CUDA)
+    random_state : reproducible seed
+
+    Returns
+    -------
+    KMeansResult with all metrics
     """
     model = KMeans(
         n_clusters=k,
@@ -64,10 +64,10 @@ def run_kmeans_cpu(X: np.ndarray,
         tol=tol,
         n_init=n_init,
         random_state=random_state,
-        algorithm="lloyd",   # algoritmul standard Lloyd (compatibil cu CUDA)
+        algorithm="lloyd",   # standard Lloyd algorithm (compatible with CUDA)
     )
 
-    # ── Cronometrare precisa — doar fit(), fara pregatirea datelor ────────────
+    # ── Precise timing — fit() only, no data preparation ────────────
     t_start = time.perf_counter()
     model.fit(X)
     t_end = time.perf_counter()
@@ -89,27 +89,27 @@ def validate_against_reference(result: KMeansResult,
                                 reference: KMeansResult,
                                 inertia_tol_pct: float = 5.0) -> bool:
     """
-    Valideaza un rezultat comparandu-l cu un rezultat de referinta (scikit-learn).
+    Validates a result by comparing it against a reference result (scikit-learn).
 
-    Verifica daca inertia este in limita unui procent acceptabil.
-    (Centroizii pot fi in ordine diferita, deci nu se compara direct.)
+    Checks if inertia is within an acceptable percentage.
+    (Centroids may be in different order, so direct comparison is not done.)
 
-    Parametri
-    ---------
-    result        : rezultatul de validat (ex: C++, CUDA)
-    reference     : rezultatul de referinta (scikit-learn)
-    inertia_tol_pct: diferenta maxima acceptata in % pentru inertia
-
-    Returneaza
+    Parameters
     ----------
-    True daca validarea trece
+    result        : result to validate (e.g., C++, CUDA)
+    reference     : reference result (scikit-learn)
+    inertia_tol_pct: maximum acceptable difference (%) for inertia
+
+    Returns
+    -------
+    True if validation passes
     """
     diff_pct = abs(result.inertia - reference.inertia) / reference.inertia * 100
     passed = diff_pct <= inertia_tol_pct
 
     status = "✅ PASS" if passed else "❌ FAIL"
-    print(f"  Validare {result.platform} vs {reference.platform}: "
-          f"Inertia diff={diff_pct:.2f}% (toleranta={inertia_tol_pct}%) → {status}")
+    print(f"  Validation {result.platform} vs {reference.platform}: "
+          f"Inertia diff={diff_pct:.2f}% (tolerance={inertia_tol_pct}%) → {status}")
     return passed
 
 
@@ -117,9 +117,9 @@ def validate_against_reference(result: KMeansResult,
 if __name__ == "__main__":
     from data_generator import generate_synthetic
 
-    print("=== Test rapid kmeans_cpu.py ===\n")
+    print("=== Quick test kmeans_cpu.py ===\n")
     X = generate_synthetic(n_samples=50_000, n_features=8, k=10)
     result = run_kmeans_cpu(X, k=10)
     print(result.summary())
-    print(f"  Primele 5 etichete: {result.labels[:5]}")
-    print(f"  Shape centroizi:    {result.centers.shape}")
+    print(f"  First 5 labels: {result.labels[:5]}")
+    print(f"  Centroids shape:    {result.centers.shape}")

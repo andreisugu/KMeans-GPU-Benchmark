@@ -1,14 +1,14 @@
 /**
  * main.cpp
  * --------
- * Entry point pentru benchmark-ul C++ K-Means secvential.
+ * Entry point for sequential C++ K-Means benchmark.
  *
- * Utilizare:
+ * Usage:
  *   ./kmeans_seq --n 100000 --d 16 --k 10
  *   ./kmeans_seq --csv ../../data/generated/Medium.csv --k 10
- *   ./kmeans_seq --all                  (ruleaza toate scenariile)
+ *   ./kmeans_seq --all                  (run all scenarios)
  *
- * Rezultatele se salveaza in ../../results/results_cpp.csv
+ * Results are saved to ../../results/results_cpp.csv
  */
 
 #include "kmeans.h"
@@ -23,7 +23,7 @@
 #include <iomanip>
 
 
-// ── Scenariile de benchmark (echivalente cu Python) ───────────────────────────
+// ── Benchmark scenarios (equivalent to Python) ───────────────────────────
 struct Scenario {
     std::string name;
     int n_samples;
@@ -33,14 +33,14 @@ struct Scenario {
 };
 
 static const std::vector<Scenario> SCENARIOS = {
-    {"Small",    10'000,    2,   5,  "Debugging rapid"},
-    {"Medium",   100'000,   16,  10, "Date moderate"},
-    {"Large",    1'000'000, 64,  20, "Limita CPU"},
-    {"High-Dim", 100'000,   512, 10, "Bandwidth memorie"},
+    {"Small",    10'000,    2,   5,  "Quick debugging"},
+    {"Medium",   100'000,   16,  10, "Moderate data"},
+    {"Large",    1'000'000, 64,  20, "CPU limit"},
+    {"High-Dim", 100'000,   512, 10, "Memory bandwidth"},
 };
 
 
-// ── Generare date sintetice in C++ (fara dependinta de Python) ────────────────
+// ── Generate synthetic data in C++ (no Python dependency) ────────────────
 /**
  * Genereaza N puncte in D dimensiuni cu K clustere gaussiene.
  * Echivalent cu sklearn.datasets.make_blobs (acelasi seed = rezultate similare).
@@ -52,7 +52,7 @@ Dataset generate_synthetic(int n_samples, int n_features, int k,
     std::normal_distribution<float> normal(0.0f, 1.0f);
     std::uniform_int_distribution<int> cluster_pick(0, k - 1);
 
-    // Genereaza centroizi aleatori pentru clustere
+    // Generate random cluster centers
     std::vector<std::vector<float>> cluster_centers(k, std::vector<float>(n_features));
     std::uniform_real_distribution<float> center_dist(-10.0f, 10.0f);
     for (int ki = 0; ki < k; ++ki)
@@ -74,7 +74,7 @@ Dataset generate_synthetic(int n_samples, int n_features, int k,
 }
 
 
-// ── Afisare sumar ─────────────────────────────────────────────────────────────
+// ── Display summary ─────────────────────────────────────────────────────────────
 void print_result(const std::string& scenario_name,
                   const KMeansResult& res,
                   int n_samples, int n_features, int k)
@@ -82,46 +82,46 @@ void print_result(const std::string& scenario_name,
     std::cout << std::fixed << std::setprecision(4);
     std::cout << "[C++-seq | " << scenario_name << "] "
               << "N=" << n_samples << " D=" << n_features << " K=" << k
-              << " | Timp=" << res.time_ms << "ms"
+              << " | Time=" << res.time_ms << "ms"
               << " | Iter=" << res.n_iter
               << " | Inertia=" << res.inertia
               << "\n";
 }
 
 
-// ── Rulare un singur scenariu ─────────────────────────────────────────────────
+// ── Run a single scenario ─────────────────────────────────────────────────
 void run_scenario(const Scenario& sc,
                   const std::string& output_csv,
                   int random_state = 42)
 {
-    std::cout << "\nScenariu: " << sc.name << " (" << sc.desc << ")\n";
+    std::cout << "\nScenario: " << sc.name << " (" << sc.desc << ")\n";
     std::cout << "  N=" << sc.n_samples
               << "  D=" << sc.n_features
               << "  K=" << sc.k << "\n";
 
-    std::cout << "  Generare date...";
+    std::cout << "  Generating data...";
     auto t0 = std::chrono::high_resolution_clock::now();
     Dataset ds = generate_synthetic(sc.n_samples, sc.n_features, sc.k, random_state);
     double gen_ms = std::chrono::duration<double, std::milli>(
         std::chrono::high_resolution_clock::now() - t0).count();
-    std::cout << " gata (" << gen_ms << "ms, "
+    std::cout << " done (" << gen_ms << "ms, "
               << (ds.data.size() * 4 / 1e6) << " MB)\n";
 
-    std::cout << "  Rulare K-Means C++...";
+    std::cout << "  Running K-Means C++...";
     KMeans model(sc.k, 300, 1e-4f, "kmeans++", random_state);
     KMeansResult res = model.fit(ds);
-    std::cout << " gata!\n";
+    std::cout << " done!\n";
 
     print_result(sc.name, res, sc.n_samples, sc.n_features, sc.k);
 
-    // Salvare in CSV
+    // Save to CSV
     io::save_benchmark_row(output_csv, "C++-sequential",
                            sc.n_samples, sc.n_features, sc.k,
                            res.time_ms, res.n_iter, res.inertia);
 }
 
 
-// ── Parsare argumente simple ──────────────────────────────────────────────────
+// ── Parse simple arguments ──────────────────────────────────────────────────
 struct Args {
     bool        run_all    = false;
     bool        from_csv   = false;

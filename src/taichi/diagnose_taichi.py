@@ -1,8 +1,8 @@
 """
 diagnose_taichi.py
 ------------------
-Masoara timpii individuali per kernel si per iteratie
-pentru a identifica unde se pierde timpul in Large si High-Dim.
+Measures individual kernel times and per-iteration times
+to identify where time is spent in Large and High-Dim scenarios.
 """
 import sys, os, time
 import numpy as np
