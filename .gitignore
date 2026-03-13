@@ -1,29 +1,81 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
+# === CMake and Make build files ===
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.make
+*.mk
+
+# === Log and temporary files ===
+*.log
+*.tmp
+*.bak
+
+# === Python environment lock files ===
+Pipfile.lock
+poetry.lock
+
+# === Editor/IDE files ===
+.idea/
+.spyderproject
+.spyproject
+
+# === Coverage and test artifacts ===
+.coverage
+htmlcov/
+.pytest_cache/
+
+# === Miscellaneous ===
+Thumbs.db
+
+# === Git-ignored folders (external sources, builds, environments) ===
+AdaptiveCPP/
+AdaptiveCPP/
+external/
+build/
+bin/
+.venv/
 env/
 venv/
 .env
 
-# C++ / CUDA / C
+# === Python cache and bytecode ===
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*$py.class
+
+# === C++/CUDA/SYCL build artifacts ===
 *.o
 *.obj
 *.out
+*.so
+*.a
 *.exe
 *.dll
 *.lib
-*.a
 *.ptx
 *.cubin
-# Ignore build directories
-build/
-bin/
 
-# Jupyter Notebook / Google Colab
+# === AdaptiveCpp build and cache ===
+AdaptiveCpp/build/
+AdaptiveCpp/install/
+AdaptiveCpp/.cache/
+
+# === Results and generated data ===
+results/*.csv
+results/*.png
+data/generated/
+
+# === System/IDE files ===
+.DS_Store
+.DS_Store?
+*.swp
 .ipynb_checkpoints
+
+# === Keys and secrets ===
+rocm.gpg.key
 
 # Datasets (Crucial: never push big Kaggle datasets to GitHub!)
 data/
