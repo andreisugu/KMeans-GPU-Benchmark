@@ -1,6 +1,5 @@
 import numpy as np
 from sklearn.datasets import make_blobs
-import matplotlib.pyplot as plt
 import os
 
 def generate_kmeans_dataset(filename, num_points, num_features, num_clusters, max_iter=100):
@@ -35,30 +34,32 @@ if __name__ == "__main__":
     os.makedirs(INPUT_DIR, exist_ok=True)
 
     print("=== START GENERARE INPUTURI PENTRU BENCHMARK ===")
-    print("ATENȚIE: Fișierele mari pot dura câteva minute pentru a fi generate și salvate pe disc.\n")
+    print("Parametrii au fost calculați matematic pentru a atinge ținte specifice de timp pe CPU-ul curent.\n")
 
-    # --- 1. INPUT MIC (Testare rapidă: sub 1 secundă) ---
-    generate_kmeans_dataset(f"{INPUT_DIR}/01_input_mic.txt", 
-                            num_points=10000, num_features=4, num_clusters=8)
+    # --- 1. INPUT 1 (Țintă: ~5 secunde) ---
+    # Volum calculat: 250,000 * 16 * 32 = 128 milioane de operații per iterație
+    generate_kmeans_dataset(f"{INPUT_DIR}/01_input_5sec.txt", 
+                            num_points=250000, num_features=16, num_clusters=32)
 
-    # --- 2. INPUT MEDIU-MIC (Aproximativ 1-2 minute, în funcție de CPU) ---
-    generate_kmeans_dataset(f"{INPUT_DIR}/02_input_mediu1.txt", 
-                            num_points=500000, num_features=16, num_clusters=32)
+    # --- 2. INPUT 2 (Țintă: ~30 secunde) ---
+    # Volum calculat: 700,000 * 32 * 32 = 716 milioane de operații per iterație
+    generate_kmeans_dataset(f"{INPUT_DIR}/02_input_30sec.txt", 
+                            num_points=700000, num_features=32, num_clusters=32)
 
-    # --- 3. INPUT MEDIU-MARE (Țintă: ~5 minute) ---
-    # Face 1.000.000 * 32 * 64 calcule de distanță PER iterație
-    generate_kmeans_dataset(f"{INPUT_DIR}/03_input_mediu2.txt", 
-                            num_points=1000000, num_features=32, num_clusters=64)
+    # --- 3. INPUT 3 (Țintă: ~2 minute / 120 sec) ---
+    # Volum calculat: 1,400,000 * 32 * 64 = 2.86 miliarde de operații per iterație
+    generate_kmeans_dataset(f"{INPUT_DIR}/03_input_2min.txt", 
+                            num_points=1400000, num_features=32, num_clusters=64)
 
-    # --- 4. INPUT MARE (Țintă: ~7 minute) ---
-    # Face 2.000.000 * 64 * 128 calcule de distanță PER iterație
-    generate_kmeans_dataset(f"{INPUT_DIR}/04_input_mare.txt", 
-                            num_points=2000000, num_features=64, num_clusters=128)
+    # --- 4. INPUT 4 (Țintă: ~5 minute / 300 sec) ---
+    # Volum calculat: 3,500,000 * 32 * 64 = 7.16 miliarde de operații per iterație
+    generate_kmeans_dataset(f"{INPUT_DIR}/04_input_5min.txt", 
+                            num_points=3500000, num_features=32, num_clusters=64)
 
-    # --- 5. INPUT FOARTE MARE (Țintă: ~10 minute MAX) ---
-    # Face 4.000.000 * 64 * 256 calcule de distanță PER iterație. 
-    # Va genera un fișier de aproximativ 2.5 GB.
-    generate_kmeans_dataset(f"{INPUT_DIR}/05_input_extrem.txt", 
-                            num_points=4000000, num_features=64, num_clusters=256)
+    # --- 5. INPUT 5 (Țintă: ~10 minute / 600 sec) ---
+    # Păstrăm numărul de puncte pentru a nu exploda memoria RAM, dar dublăm clusterele.
+    # Volum calculat: 3,500,000 * 32 * 128 = 14.33 miliarde de operații per iterație
+    generate_kmeans_dataset(f"{INPUT_DIR}/05_input_10min.txt", 
+                            num_points=3500000, num_features=32, num_clusters=128)
 
-    print("\n=== TOATE CELE 5 INPUTURI AU FOST GENERATE ÎN FOLDERUL 'inputs/' ===")
+    print("\n=== TOATE CELE 5 INPUTURI AU FOST REGENERATE ÎN FOLDERUL 'inputs/' ===")
