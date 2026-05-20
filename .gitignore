@@ -1,0 +1,16 @@
+# Virtual environment
+.venv/
+__pycache__/
+*.pyc
+
+# Dataset inputs
+solutions/inputs/
+solutions/benchmark_dataset_*.txt
+
+# Compiled binaries
+solutions/kmeans_seq
+solutions/kmeans_hip
+solutions/kmeans_mpi
+
+# Benchmark results
+solutions/results_*.txt
