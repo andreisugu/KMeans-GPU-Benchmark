@@ -68,7 +68,7 @@ def create_presentation():
         title_p.font.bold = True
         title_p.font.color.rgb = COLOR_TEXT_DARK
 
-    def add_slide_footer(slide, current_page, total_pages=10, is_dark=False):
+    def add_slide_footer(slide, current_page, total_pages=11, is_dark=False):
         footer_box = slide.shapes.add_textbox(Inches(0.8), Inches(7.0), Inches(11.7), Inches(0.3))
         footer_tf = footer_box.text_frame
         footer_tf.word_wrap = True
@@ -136,7 +136,91 @@ def create_presentation():
     p_sub.font.color.rgb = COLOR_TEXT_MUTED
     add_slide_footer(slide1, 1, is_dark=True)
 
-    # Slide 2: Hardware
+    # =========================================================================
+    # SLIDE 2: Theme Description (What is K-Means)
+    # =========================================================================
+    slide_theme = prs.slides.add_slide(blank_layout)
+    set_slide_background(slide_theme, COLOR_BG_LIGHT)
+    add_slide_header(slide_theme, "Project Theme: K-Means Clustering & Lloyd's Algorithm")
+    
+    col_width = Inches(5.6)
+    col_height = Inches(4.9)
+    top_pos = Inches(1.8)
+    
+    # Left Card: Lloyd's Algorithm
+    algo_card = slide_theme.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), top_pos, col_width, col_height)
+    algo_card.fill.solid()
+    algo_card.fill.fore_color.rgb = COLOR_CARD_BG
+    algo_card.line.color.rgb = COLOR_BORDER
+    algo_tf = algo_card.text_frame
+    algo_tf.word_wrap = True
+    algo_tf.margin_left = algo_tf.margin_right = algo_tf.margin_top = algo_tf.margin_bottom = Inches(0.3)
+    algo_title = algo_tf.paragraphs[0]
+    algo_title.text = "Lloyd's Algorithm (Standard K-Means)"
+    algo_title.font.name = FONT_TITLE
+    algo_title.font.size = Pt(22)
+    algo_title.font.bold = True
+    algo_title.font.color.rgb = COLOR_SUPPORT
+    algo_title.space_after = Pt(8)
+    
+    steps = [
+        "1. Initialize: Pick K random points as the initial centroids (Forgy method).",
+        "2. Assign (Expectation): Calculate the distance from every point to every centroid. Assign each point to its nearest centroid to form Voronoi partitions.",
+        "3. Update (Maximization): Recompute the position of each centroid by calculating the arithmetic mean of all points assigned to it.",
+        "4. Repeat: Loop through Steps 2 and 3 until no points change their cluster assignments (convergence guaranteed)."
+    ]
+    for b in steps:
+        p = algo_tf.add_paragraph()
+        p.text = b
+        p.font.name = FONT_BODY
+        p.font.size = Pt(13)
+        p.font.bold = b.startswith("2. Assign")
+        p.font.color.rgb = COLOR_ACCENT if b.startswith("2. Assign") else COLOR_TEXT_DARK
+        p.space_after = Pt(5)
+
+    # Right Card: Complexity & Bottleneck
+    comp_card = slide_theme.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(6.9), top_pos, col_width, col_height)
+    comp_card.fill.solid()
+    comp_card.fill.fore_color.rgb = COLOR_CARD_BG
+    comp_card.line.color.rgb = COLOR_BORDER
+    comp_tf = comp_card.text_frame
+    comp_tf.word_wrap = True
+    comp_tf.margin_left = comp_tf.margin_right = comp_tf.margin_top = comp_tf.margin_bottom = Inches(0.3)
+    comp_title = comp_tf.paragraphs[0]
+    comp_title.text = "Complexity & The Parallelization Goal"
+    comp_title.font.name = FONT_TITLE
+    comp_title.font.size = Pt(22)
+    comp_title.font.bold = True
+    comp_title.font.color.rgb = COLOR_SUPPORT
+    comp_title.space_after = Pt(8)
+    
+    comp_desc = comp_tf.add_paragraph()
+    comp_desc.text = "Sequential Complexity: O(N × K × D × I)"
+    comp_desc.font.name = FONT_TITLE
+    comp_desc.font.size = Pt(16)
+    comp_desc.font.bold = True
+    comp_desc.font.color.rgb = COLOR_CHART_HIP
+    comp_desc.space_after = Pt(8)
+    
+    comp_bullets = [
+        "N = Points, K = Clusters, D = Dimensions, I = Iterations.",
+        "The Bottleneck: The Assignment phase (Step 2) requires N × K distance calculations per iteration. For large datasets, this nested loop takes up >95% of execution time.",
+        "The Parallel Opportunity: Step 2 is 'Embarrassingly Parallel'. Finding the nearest centroid for point A is completely independent of finding the nearest centroid for point B.",
+        "Project Goal: Exploit this independence across GPU threads (HIP), distributed memory architectures (MPI), and SIMD vectorization (scikit-learn) to drastically reduce execution time."
+    ]
+    for b in comp_bullets:
+        p = comp_tf.add_paragraph()
+        p.text = "• " + b
+        p.font.name = FONT_BODY
+        p.font.size = Pt(12.5)
+        p.font.color.rgb = COLOR_TEXT_DARK
+        p.space_after = Pt(4)
+        
+    add_slide_footer(slide_theme, 2)
+
+    # =========================================================================
+    # SLIDE 3: Hardware Environment (Light Background)
+    # =========================================================================
     slide2 = prs.slides.add_slide(blank_layout)
     set_slide_background(slide2, COLOR_BG_LIGHT)
     add_slide_header(slide2, "Benchmarking Platform: Hardware Specifications")
@@ -200,9 +284,9 @@ def create_presentation():
         p.font.size = Pt(14)
         p.font.color.rgb = COLOR_TEXT_DARK
         p.space_after = Pt(6)
-    add_slide_footer(slide2, 2)
+    add_slide_footer(slide2, 3)
 
-    # Slide 3: Architectures
+    # Slide 4: Architectures
     slide3 = prs.slides.add_slide(blank_layout)
     set_slide_background(slide3, COLOR_BG_LIGHT)
     add_slide_header(slide3, "Four Implementations: Strategy & Core Technologies")
@@ -245,9 +329,9 @@ def create_presentation():
         desc_p.font.name = FONT_BODY
         desc_p.font.size = Pt(14)
         desc_p.font.color.rgb = COLOR_TEXT_DARK
-    add_slide_footer(slide3, 3)
+    add_slide_footer(slide3, 4)
 
-    # Slide 4: Assignments
+    # Slide 5: Assignments
     slide4 = prs.slides.add_slide(blank_layout)
     set_slide_background(slide4, COLOR_BG_LIGHT)
     add_slide_header(slide4, "Logical Differences: The Assignment Phase (Expectation)")
@@ -288,9 +372,9 @@ def create_presentation():
         d.font.size = Pt(14)
         d.font.color.rgb = COLOR_TEXT_DARK
         d.space_before = Pt(7)
-    add_slide_footer(slide4, 4)
+    add_slide_footer(slide4, 5)
 
-    # Slide 5: Updates
+    # Slide 6: Updates
     slide5 = prs.slides.add_slide(blank_layout)
     set_slide_background(slide5, COLOR_BG_LIGHT)
     add_slide_header(slide5, "Logical Differences: Centroid Update & Hybrid GPU-CPU Model")
@@ -338,9 +422,9 @@ def create_presentation():
     desc2.font.name = FONT_BODY
     desc2.font.size = Pt(14.5)
     desc2.font.color.rgb = COLOR_TEXT_DARK
-    add_slide_footer(slide5, 5)
+    add_slide_footer(slide5, 6)
 
-    # Slide 6: Synthetic Table
+    # Slide 7: Synthetic Table
     slide6 = prs.slides.add_slide(blank_layout)
     set_slide_background(slide6, COLOR_BG_LIGHT)
     add_slide_header(slide6, "Performance Comparison: Synthetic Datasets")
@@ -415,10 +499,10 @@ def create_presentation():
         p.font.size = Pt(13.5)
         p.font.color.rgb = COLOR_TEXT_DARK
         p.space_after = Pt(10)
-    add_slide_footer(slide6, 6)
+    add_slide_footer(slide6, 7)
 
     # =========================================================================
-    # SLIDE 7: Synthetic Benchmarks Visualizations (NATIVE CHARTS)
+    # SLIDE 8: Synthetic Benchmarks Visualizations (NATIVE CHARTS)
     # =========================================================================
     slide7 = prs.slides.add_slide(blank_layout)
     set_slide_background(slide7, COLOR_BG_LIGHT)
@@ -466,10 +550,10 @@ def create_presentation():
         series.format.line.color.rgb = color
         series.format.line.width = Pt(5)
 
-    add_slide_footer(slide7, 7)
+    add_slide_footer(slide7, 8)
 
     # =========================================================================
-    # SLIDE 8: Real-World Datasets Table
+    # SLIDE 9: Real-World Datasets Table
     # =========================================================================
     slide8 = prs.slides.add_slide(blank_layout)
     set_slide_background(slide8, COLOR_BG_LIGHT)
@@ -540,10 +624,10 @@ def create_presentation():
         p.font.size = Pt(13.5)
         p.font.color.rgb = COLOR_TEXT_DARK
         p.space_after = Pt(10)
-    add_slide_footer(slide8, 8)
+    add_slide_footer(slide8, 9)
 
     # =========================================================================
-    # SLIDE 9: Real-World Visualizations (NATIVE CHARTS)
+    # SLIDE 10: Real-World Visualizations (NATIVE CHARTS)
     # =========================================================================
     slide9 = prs.slides.add_slide(blank_layout)
     set_slide_background(slide9, COLOR_BG_LIGHT)
@@ -587,10 +671,10 @@ def create_presentation():
         series.format.fill.solid()
         series.format.fill.fore_color.rgb = color
 
-    add_slide_footer(slide9, 9)
+    add_slide_footer(slide9, 10)
 
     # =========================================================================
-    # SLIDE 10: Key Insights & Technical Summary
+    # SLIDE 11: Key Insights & Technical Summary
     # =========================================================================
     slide10 = prs.slides.add_slide(blank_layout)
     set_slide_background(slide10, COLOR_BG_DARK)
@@ -672,7 +756,7 @@ def create_presentation():
         d_p.font.size = Pt(14.5)
         d_p.font.color.rgb = COLOR_TEXT_LIGHT
         
-    add_slide_footer(slide10, 10, is_dark=True)
+    add_slide_footer(slide10, 11, is_dark=True)
     
     output_path = "/home/restlessstone/VSCodeProjects/KMeans-GPU-Benchmark/KMeans_Presentation.pptx"
     prs.save(output_path)
