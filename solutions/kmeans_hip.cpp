@@ -69,27 +69,7 @@ __global__ void assignClustersKernel(
     }
 }
 
-// ============================================================================
-// KERNEL 2: CENTROID ACCUMULATION (MAXIMIZATION STEP) — GPU PARALLEL
-// Each thread handles ONE point: adds coordinates to its cluster's accumulator
-// using atomicAdd to prevent race conditions.
-// ============================================================================
-__global__ void accumulateCentroidsKernel(
-    const double *data, const int *assignments,
-    double *centroidSums, int *counts,
-    int numPoints, int numFeatures)
-{
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-    if (i >= numPoints) return;
-
-    int cluster = assignments[i];
-    atomicAdd(&counts[cluster], 1);
-
-    for (int d = 0; d < numFeatures; ++d)
-    {
-        atomicAdd(&centroidSums[cluster * numFeatures + d], data[i * numFeatures + d]);
-    }
-}
+// Centroid updates are done on the CPU to avoid atomic contention on the GPU.
 
 // Helper function to display the number of points in each cluster at the end
 int counts_helper(const vector<int> &assignments, int targetCluster)
@@ -148,14 +128,12 @@ int main()
     // ============================================================================
     // 4. GPU MEMORY ALLOCATION
     // ============================================================================
-    double *d_data, *d_centroids, *d_centroidSums;
-    int *d_assignments, *d_counts, *d_changedFlag;
+    double *d_data, *d_centroids;
+    int *d_assignments, *d_changedFlag;
 
     HIP_CHECK(hipMalloc(&d_data, numPoints * numFeatures * sizeof(double)));
     HIP_CHECK(hipMalloc(&d_centroids, k * numFeatures * sizeof(double)));
-    HIP_CHECK(hipMalloc(&d_centroidSums, k * numFeatures * sizeof(double)));
     HIP_CHECK(hipMalloc(&d_assignments, numPoints * sizeof(int)));
-    HIP_CHECK(hipMalloc(&d_counts, k * sizeof(int)));
     HIP_CHECK(hipMalloc(&d_changedFlag, sizeof(int)));
 
     HIP_CHECK(hipMemcpy(d_data, data.data(),
@@ -203,24 +181,23 @@ int main()
         changed = (h_changed != 0);
         if (!changed) break;
 
-        // STEP B: UPDATE PHASE — ACCUMULATE ON GPU, DIVIDE ON CPU
-        HIP_CHECK(hipMemset(d_centroidSums, 0, k * numFeatures * sizeof(double)));
-        HIP_CHECK(hipMemset(d_counts, 0, k * sizeof(int)));
+        // STEP B: UPDATE PHASE — ACCUMULATE ON CPU
+        HIP_CHECK(hipMemcpy(clusterAssignments.data(), d_assignments,
+                            numPoints * sizeof(int),
+                            hipMemcpyDeviceToHost));
 
-        hipLaunchKernelGGL(accumulateCentroidsKernel,
-                           dim3(gridSize), dim3(blockSize), 0, 0,
-                           d_data, d_assignments, d_centroidSums, d_counts,
-                           numPoints, numFeatures);
-        HIP_CHECK(hipGetLastError());
-
-        vector<double> centroidSums(k * numFeatures);
+        vector<double> centroidSums(k * numFeatures, 0.0);
         vector<int> counts(k, 0);
 
-        HIP_CHECK(hipMemcpy(centroidSums.data(), d_centroidSums,
-                            k * numFeatures * sizeof(double),
-                            hipMemcpyDeviceToHost));
-        HIP_CHECK(hipMemcpy(counts.data(), d_counts,
-                            k * sizeof(int), hipMemcpyDeviceToHost));
+        for (int i = 0; i < numPoints; ++i)
+        {
+            int cluster = clusterAssignments[i];
+            counts[cluster]++;
+            for (int d = 0; d < numFeatures; ++d)
+            {
+                centroidSums[cluster * numFeatures + d] += data[i * numFeatures + d];
+            }
+        }
 
         for (int j = 0; j < k; ++j)
         {
@@ -258,9 +235,7 @@ int main()
     // 7. Free GPU memory
     HIP_CHECK(hipFree(d_data));
     HIP_CHECK(hipFree(d_centroids));
-    HIP_CHECK(hipFree(d_centroidSums));
     HIP_CHECK(hipFree(d_assignments));
-    HIP_CHECK(hipFree(d_counts));
     HIP_CHECK(hipFree(d_changedFlag));
 
     return 0;

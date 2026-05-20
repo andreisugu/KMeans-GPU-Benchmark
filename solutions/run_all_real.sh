@@ -35,19 +35,35 @@ for input_file in $(ls "$INPUT_DIR"/*.txt 2>/dev/null | sort); do
     echo "============================================================"
 
     echo "--- Sequential ---"
-    ./kmeans_seq < "$input_file" | tee "$OUTPUT_DIR/${dataset%.txt}_seq.txt"
+    if [ -s "$OUTPUT_DIR/${dataset%.txt}_seq.txt" ]; then
+        echo "Skipping: already run"
+    else
+        ./kmeans_seq < "$input_file" | tee "$OUTPUT_DIR/${dataset%.txt}_seq.txt"
+    fi
     echo ""
 
     echo "--- scikit-learn ---"
-    python3 kmeans_sklearn.py < "$input_file" | tee "$OUTPUT_DIR/${dataset%.txt}_sklearn.txt"
+    if [ -s "$OUTPUT_DIR/${dataset%.txt}_sklearn.txt" ]; then
+        echo "Skipping: already run"
+    else
+        python3 kmeans_sklearn.py < "$input_file" | tee "$OUTPUT_DIR/${dataset%.txt}_sklearn.txt"
+    fi
     echo ""
 
     echo "--- HIP/GPU ---"
-    ./kmeans_hip < "$input_file" | tee "$OUTPUT_DIR/${dataset%.txt}_hip.txt"
+    if [ -s "$OUTPUT_DIR/${dataset%.txt}_hip.txt" ]; then
+        echo "Skipping: already run"
+    else
+        ./kmeans_hip < "$input_file" | tee "$OUTPUT_DIR/${dataset%.txt}_hip.txt"
+    fi
     echo ""
 
     echo "--- MPI ($NUM_MPI_PROCS procese) ---"
-    mpirun --oversubscribe -np $NUM_MPI_PROCS ./kmeans_mpi < "$input_file" | tee "$OUTPUT_DIR/${dataset%.txt}_mpi.txt"
+    if [ -s "$OUTPUT_DIR/${dataset%.txt}_mpi.txt" ]; then
+        echo "Skipping: already run"
+    else
+        mpirun --oversubscribe -np $NUM_MPI_PROCS ./kmeans_mpi < "$input_file" | tee "$OUTPUT_DIR/${dataset%.txt}_mpi.txt"
+    fi
     echo ""
 done
 

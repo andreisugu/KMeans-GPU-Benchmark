@@ -1,0 +1,10 @@
+Starting K-Means clustering on 200 points...
+------------------------------------------------
+Convergence reached in 10 iterations.
+Execution Time (Core Loop): 0.039444 ms
+------------------------------------------------
+Centroid 0: 1.19863 -0.460981 -0.327038 (Points: 58)
+Centroid 1: -0.795115 -0.383984 -0.243929 (Points: 48)
+Centroid 2: 0.221716 1.08323 -1.29005 (Points: 33)
+Centroid 3: -0.441917 0.991583 1.2395 (Points: 39)
+Centroid 4: -0.974396 -1.32955 1.13218 (Points: 22)

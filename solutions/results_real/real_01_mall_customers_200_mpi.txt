@@ -1,0 +1,10 @@
+Starting K-Means clustering on 200 points with 4 MPI processes...
+------------------------------------------------
+Convergence reached in 10 iterations.
+Execution Time (Core Loop): 0.141034 ms
+------------------------------------------------
+Centroid 0: -0.428806 0.974847 1.21609 (Points: 40)
+Centroid 1: -0.980679 -0.74306 0.46744 (Points: 54)
+Centroid 2: 0.0733308 0.974945 -1.1973 (Points: 39)
+Centroid 3: 0.531073 -1.29051 -1.23647 (Points: 20)
+Centroid 4: 1.20484 -0.235773 -0.0523678 (Points: 47)

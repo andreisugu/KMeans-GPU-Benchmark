@@ -67,6 +67,51 @@ All tests were run on an **AMD Ryzen 7 7840HS** with **AMD Radeon 780M iGPU (gfx
 
 ---
 
+## 📊 Real-world Dataset Benchmark
+
+To transition from synthetic testing to real-world deployment, the suite was tested against academic datasets from **UCI Machine Learning Repository** and **Kaggle**:
+1. **Mall Customers** (Kaggle) — 200 rows × 3 dimensions, $K=5$ customer segments.
+2. **Forest Covertype** (UCI) — 581,012 rows × 54 dimensions, $K=7$ semantic forest cover types.
+3. **Forest Covertype (Stress)** — 581,012 rows × 54 dimensions, $K=50$ clusters (computational stress test).
+4. **KDD Cup '99 (10% subset)** (UCI) — 494,021 rows × 38 numerical dimensions, $K=23$ network intrusion classes.
+5. **KDD Cup '99 (Full)** (UCI) — **4,898,431 rows** × 38 numerical dimensions, $K=23$ (large-scale performance benchmark).
+
+### ⚡ Hybrid CPU-GPU Optimization
+In early testing, the naive GPU implementation of the Centroid Update phase (Maximization Step) using double-precision `atomicAdd` inside `accumulateCentroidsKernel` caused severe serialization and memory contention on the GPU (millions of threads competing for 23 or 50 centroid memory locations). This made the HIP/GPU implementation slower than Sequential CPU on larger runs.
+
+**Optimization**: The implementation was refactored into a **hybrid GPU-CPU pipeline**:
+- **Expectation Step (Distance & Assignment)**: Done on the GPU (massively parallel, no write conflicts).
+- **Maximization Step (Centroid Update)**: The `assignments` array (19.6 MB for 5M points) is transferred to the host (takes $<1.5$ ms), and centroid recalculation is performed on the CPU.
+This hybrid model resolved the memory contention, yielding a **6.4× speedup** over the naive GPU code and outperforming the sequential C++ baseline.
+
+### Execution Times (milliseconds)
+
+| Dataset | $N$ | $D$ | $K$ | Sequential C++ | scikit-learn (Python) | HIP/GPU (AMD 780M) | MPI (4 Procese) |
+|---|---|---|---|---|---|---|---|
+| **Mall Customers** | 200 | 3 | 5 | 0.04 ms | 21.86 ms | 1.77 ms | **0.14 ms** |
+| **Covertype K=7** | 581,012 | 54 | 7 | 3,738.36 ms | **394.77 ms** | 1,922.17 ms | 1,251.34 ms |
+| **Covertype K=50** | 581,012 | 54 | 50 | 81,518.00 ms | **927.96 ms** | 28,308.00 ms | 20,905.30 ms |
+| **KDD Cup 10%** | 494,021 | 38 | 23 | 8,182.50 ms | **417.77 ms** | 6,071.91 ms | 3,674.98 ms |
+| **KDD Cup 100%** | 4,898,431 | 38 | 23 | 201,664.00 ms | **5,307.35 ms** | 45,089.70 ms | 37,818.60 ms |
+
+### Speedup vs Sequential Baseline
+
+| Dataset | scikit-learn | HIP/GPU | MPI (4 Procese) |
+|---|---|---|---|
+| **Mall Customers** | 0.00× | 0.02× | 0.28× |
+| **Covertype K=7** | 9.47× | 1.94× | 2.99× |
+| **Covertype K=50** | 87.85× | 2.88× | 3.90× |
+| **KDD Cup 10%** | 19.59× | 1.35× | 2.23× |
+| **KDD Cup 100%** | 38.00× | 4.47× | 5.33× |
+
+### 📈 Real-world Benchmark Visualization
+
+![Real-world Execution Time Comparison](solutions/grafic_real_timpi.png)
+
+![Real-world Speedup Comparison](solutions/grafic_real_speedup.png)
+
+---
+
 ## 🗃️ Dataset Scaling
 
 Datasets are synthetically generated using `datasets.py` (`sklearn.datasets.make_blobs`). They were mathematically designed to stress the sequential implementation to specific time targets:
@@ -122,7 +167,29 @@ bash run_all_mpi.sh
 
 Each script compiles (where applicable) and runs the implementation against all 5 datasets in order, printing results to stdout. Output is also saved to `results_seq.txt`, `results_sklearn.txt`, `results_hip.txt`, and `results_mpi.txt`.
 
-### 3. Manual Compilation
+### 3. Real-world Datasets Preparation and Benchmarking
+
+To run the benchmarks on real-world datasets:
+```bash
+cd solutions/
+
+# 1. Download Kaggle Mall Customer segmentation dataset
+curl -L -o ~/Downloads/customer-segmentation-tutorial-in-python.zip \
+  https://www.kaggle.com/api/v1/datasets/download/vjchoudhary7/customer-segmentation-tutorial-in-python
+
+# 2. Extract and prepare all real-world datasets (Mall Customers, Covtype, KDD Cup)
+# This downloads them from UCI/sklearn cache, standardizes them, and writes the flat formats
+python3 prepare_real_datasets.py
+
+# 3. Run all implementations on the real-world datasets
+# Results are cached to skip already-completed runs if re-executed
+bash run_all_real.sh
+
+# 4. Generate the visualization graphs (saved as grafic_real_timpi.png and grafic_real_speedup.png)
+python3 plot_real_benchmarks.py
+```
+
+### 4. Manual Compilation
 
 ```bash
 # Sequential
@@ -152,20 +219,27 @@ solutions/
 ├── kmeans_hip.cpp          # HIP/GPU (AMD, hipcc)
 ├── kmeans_mpi.cpp          # MPI distributed (4 processes)
 ├── datasets.py             # Synthetic dataset generator
+├── prepare_real_datasets.py# Prepares and formats real datasets (UCI/Kaggle)
+├── plot_all_benchmarks.py  # Plotter for synthetic datasets
+├── plot_real_benchmarks.py # Plotter for real-world datasets
 ├── run_all_sequential.sh   # Runner for sequential variant
 ├── run_all_sklearn.sh      # Runner for sklearn variant
 ├── run_all_hip.sh          # Runner for HIP/GPU variant
 ├── run_all_mpi.sh          # Runner for MPI variant
-├── results_seq.txt         # Benchmark output — sequential
-├── results_sklearn.txt     # Benchmark output — sklearn
-├── results_hip.txt         # Benchmark output — HIP/GPU
-├── results_mpi.txt         # Benchmark output — MPI
-└── inputs/
-    ├── 01_input_5sec.txt
-    ├── 02_input_30sec.txt
-    ├── 03_input_2min.txt
-    ├── 04_input_5min.txt
-    └── 05_input_10min.txt
+├── run_all_real.sh         # Runner for all variants on real-world datasets
+├── results_seq.txt         # Benchmark output — sequential (synthetic)
+├── results_sklearn.txt     # Benchmark output — sklearn (synthetic)
+├── results_hip.txt         # Benchmark output — HIP/GPU (synthetic)
+├── results_mpi.txt         # Benchmark output — MPI (synthetic)
+├── inputs/                 # Synthetic inputs (gitignored)
+│   ├── 01_input_5sec.txt
+│   └── ...
+├── inputs_real/            # Real-world inputs (gitignored)
+│   ├── real_01_mall_customers_200.txt
+│   └── ...
+└── results_real/           # Benchmark outputs — real-world datasets
+    ├── real_01_mall_customers_200_seq.txt
+    └── ...
 ```
 
 ---
