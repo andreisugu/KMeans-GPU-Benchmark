@@ -3,8 +3,9 @@
 __pycache__/
 *.pyc
 
-# Dataset inputs
+# Dataset inputs (synthetic + real-world — too large for git)
 solutions/inputs/
+solutions/inputs_real/
 solutions/benchmark_dataset_*.txt
 
 # Compiled binaries
