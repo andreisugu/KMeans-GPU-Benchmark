@@ -8,6 +8,8 @@ The goal of this project is to demonstrate the speedup that parallelism achieves
 
 This repository benchmarks the algorithm across 4 implementations, all running on the **same datasets** and measuring only the core algorithmic loop (I/O excluded).
 
+📊 **PowerPoint Presentation**: A complete summary of the benchmark, results, and architecture can be found in [KMeans_Presentation.pptx](KMeans_Presentation.pptx).
+
 ---
 
 ## 🗂️ Implementations
