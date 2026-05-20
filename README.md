@@ -51,6 +51,12 @@ All tests were run on an **AMD Ryzen 7 7840HS** with **AMD Radeon 780M iGPU (gfx
 | **4. Large** | 14.0× | 3.9× | 1.9× |
 | **5. Extreme** | 19.7× | 4.3× | 3.9× |
 
+### 📈 Benchmark Visualization
+
+![K-Means Execution Time Comparison](solutions/grafic_compara_timpi.png)
+
+![K-Means Speedup Comparison](solutions/grafic_compara_speedup.png)
+
 > **Key observations:**
 > - **sklearn** is the fastest across all tests — vectorized BLAS routines (computing all N×K distances as a single matrix multiplication) bypass the explicit O(N·K·D) inner loop entirely.
 > - **HIP/GPU** scales better than MPI as dataset size grows, overtaking MPI at dataset 3+. The GPU's massive parallelism benefits from larger N.
