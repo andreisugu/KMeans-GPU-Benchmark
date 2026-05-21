@@ -68,7 +68,7 @@ def create_presentation():
         title_p.font.bold = True
         title_p.font.color.rgb = COLOR_TEXT_DARK
 
-    def add_slide_footer(slide, current_page, total_pages=11, is_dark=False):
+    def add_slide_footer(slide, current_page, total_pages=12, is_dark=False):
         footer_box = slide.shapes.add_textbox(Inches(0.8), Inches(7.0), Inches(11.7), Inches(0.3))
         footer_tf = footer_box.text_frame
         footer_tf.word_wrap = True
@@ -674,7 +674,118 @@ def create_presentation():
     add_slide_footer(slide9, 10)
 
     # =========================================================================
-    # SLIDE 11: Key Insights & Technical Summary
+    # SLIDE 11: Cloud Acceleration Requirement (RAPIDS cuML k-NN)
+    # =========================================================================
+    slide_cuml = prs.slides.add_slide(blank_layout)
+    set_slide_background(slide_cuml, COLOR_BG_LIGHT)
+    add_slide_header(slide_cuml, "Cloud Acceleration Requirement: RAPIDS cuML (k-Nearest Neighbors)")
+    
+    col_width = Inches(5.6)
+    col_height = Inches(4.5)
+    top_pos = Inches(1.8)
+    
+    # Left Card: The cuML Implementation
+    cuml_card = slide_cuml.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), top_pos, col_width, col_height)
+    cuml_card.fill.solid()
+    cuml_card.fill.fore_color.rgb = COLOR_CARD_BG
+    cuml_card.line.color.rgb = COLOR_BORDER
+    cuml_tf = cuml_card.text_frame
+    cuml_tf.word_wrap = True
+    cuml_tf.margin_left = cuml_tf.margin_right = cuml_tf.margin_top = cuml_tf.margin_bottom = Inches(0.3)
+    cuml_title = cuml_tf.paragraphs[0]
+    cuml_title.text = "NVIDIA RAPIDS cuML (Google Colab T4)"
+    cuml_title.font.name = FONT_TITLE
+    cuml_title.font.size = Pt(24)
+    cuml_title.font.bold = True
+    cuml_title.font.color.rgb = COLOR_SUPPORT
+    cuml_title.space_after = Pt(12)
+    
+    cuml_desc = cuml_tf.add_paragraph()
+    cuml_desc.text = "Executed via Google Colab on an NVIDIA T4 GPU due to strict CUDA requirements. Uses cuBLAS GEMM and Thrust radix-select for distance calculations."
+    cuml_desc.font.name = FONT_BODY
+    cuml_desc.font.size = Pt(14)
+    cuml_desc.font.color.rgb = COLOR_TEXT_DARK
+    cuml_desc.space_after = Pt(12)
+    
+    cuml_warn = cuml_tf.add_paragraph()
+    cuml_warn.text = "The k-NN Self-Join Complexity"
+    cuml_warn.font.name = FONT_TITLE
+    cuml_warn.font.size = Pt(18)
+    cuml_warn.font.bold = True
+    cuml_warn.font.color.rgb = COLOR_CHART_HIP
+    cuml_warn.space_after = Pt(8)
+    
+    cuml_bullets = [
+        "K-Means (O(N×K)): Distances from N points to K centroids.",
+        "k-NN (O(N²)): The required test script computed the nearest neighbors of the dataset AGAINST ITSELF.",
+        "This means computing a massive N×N distance matrix!"
+    ]
+    for b in cuml_bullets:
+        p = cuml_tf.add_paragraph()
+        p.text = "• " + b
+        p.font.name = FONT_BODY
+        p.font.size = Pt(14)
+        p.font.color.rgb = COLOR_TEXT_DARK
+        p.space_after = Pt(6)
+
+    # Right Card: Results & The Guess
+    res_card = slide_cuml.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(6.9), top_pos, col_width, col_height)
+    res_card.fill.solid()
+    res_card.fill.fore_color.rgb = COLOR_CARD_BG
+    res_card.line.color.rgb = COLOR_BORDER
+    res_tf = res_card.text_frame
+    res_tf.word_wrap = True
+    res_tf.margin_left = res_tf.margin_right = res_tf.margin_top = res_tf.margin_bottom = Inches(0.3)
+    res_title = res_tf.paragraphs[0]
+    res_title.text = "Execution Results & Complexity Limits"
+    res_title.font.name = FONT_TITLE
+    res_title.font.size = Pt(24)
+    res_title.font.bold = True
+    res_title.font.color.rgb = COLOR_SUPPORT
+    res_title.space_after = Pt(12)
+    
+    res_bullets = [
+        "Mall Customers (200 pts): 234.5 ms",
+        "Covertype K=7 (581K pts): 33,950.7 ms",
+        "Covertype K=50 (581K pts): 45,524.7 ms",
+        "KDD Cup 10% (494K pts): 21,798.9 ms"
+    ]
+    for b in res_bullets:
+        p = res_tf.add_paragraph()
+        p.text = b
+        p.font.name = FONT_BODY
+        p.font.size = Pt(15)
+        p.font.bold = True
+        p.font.color.rgb = COLOR_TEXT_DARK
+        p.space_after = Pt(6)
+        
+    guess_title = res_tf.add_paragraph()
+    guess_title.text = "The Final Dataset (KDD Cup Full - 4.89M pts):"
+    guess_title.font.name = FONT_TITLE
+    guess_title.font.size = Pt(18)
+    guess_title.font.bold = True
+    guess_title.font.color.rgb = COLOR_ACCENT
+    guess_title.space_before = Pt(12)
+    guess_title.space_after = Pt(8)
+    
+    guess_p = res_tf.add_paragraph()
+    guess_p.text = "STATUS: Could not be completed (Colab dataset download failed)."
+    guess_p.font.name = FONT_BODY
+    guess_p.font.size = Pt(14)
+    guess_p.font.bold = True
+    guess_p.font.color.rgb = COLOR_CHART_HIP
+    guess_p.space_after = Pt(6)
+    
+    guess_desc = res_tf.add_paragraph()
+    guess_desc.text = "Theoretical Extrapolation: An N×N matrix for 4.89 million points requires nearly 24 TRILLION distance computations. Even if downloaded, the T4 GPU would likely have encountered an Out-of-Memory (OOM) error or exceeded Colab's session time limits."
+    guess_desc.font.name = FONT_BODY
+    guess_desc.font.size = Pt(13)
+    guess_desc.font.color.rgb = COLOR_TEXT_DARK
+
+    add_slide_footer(slide_cuml, 11)
+
+    # =========================================================================
+    # SLIDE 12: Key Insights & Technical Summary
     # =========================================================================
     slide10 = prs.slides.add_slide(blank_layout)
     set_slide_background(slide10, COLOR_BG_DARK)
@@ -756,7 +867,7 @@ def create_presentation():
         d_p.font.size = Pt(14.5)
         d_p.font.color.rgb = COLOR_TEXT_LIGHT
         
-    add_slide_footer(slide10, 11, is_dark=True)
+    add_slide_footer(slide10, 12, is_dark=True)
     
     output_path = "/home/restlessstone/VSCodeProjects/KMeans-GPU-Benchmark/KMeans_Presentation.pptx"
     prs.save(output_path)
