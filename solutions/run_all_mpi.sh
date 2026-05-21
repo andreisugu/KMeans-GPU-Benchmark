@@ -21,7 +21,7 @@ for input_file in $(ls inputs/*.txt | sort); do
     echo "▶ RULEZ TESTUL: $input_file"
     echo "============================================================"
 
-    mpirun --oversubscribe -np $NUM_PROCS ./kmeans_mpi < "$input_file"
+    mpirun --allow-run-as-root --oversubscribe -np $NUM_PROCS ./kmeans_mpi < "$input_file"
 
     echo ""
 done
