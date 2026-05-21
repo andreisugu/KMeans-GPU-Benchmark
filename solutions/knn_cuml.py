@@ -31,6 +31,7 @@ import numpy as np
 # ============================================================================
 
 try:
+    import cupy as cp
     import cuml
     from cuml.neighbors import NearestNeighbors
     import cudf
@@ -109,9 +110,9 @@ def main():
 
     # --- START BENCHMARK TIMER ---
     # Everything from here is the "Core Loop": GPU fit + GPU query.
-    # We call cuml.common.cuda.synchronize() before starting and after finishing
+    # We call cp.cuda.Device().synchronize() before starting and after finishing
     # to ensure we measure actual GPU wall time, not just kernel launch time.
-    cuml.common.cuda.synchronize()
+    cp.cuda.Device().synchronize()
     start_time = time.perf_counter()
 
     # ============================================================================
@@ -135,7 +136,7 @@ def main():
 
     # Synchronize GPU before stopping the timer: ensures all CUDA kernels have
     # completed execution, not just been launched asynchronously.
-    cuml.common.cuda.synchronize()
+    cp.cuda.Device().synchronize()
 
     # --- STOP BENCHMARK TIMER ---
     end_time = time.perf_counter()
